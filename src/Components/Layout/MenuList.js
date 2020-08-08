@@ -17,7 +17,7 @@ const StoreBlock = styled.div`
   `}
 `;
 
-const MenuList = ({ storeData, subInput }) => {
+const MenuList = ({ storeData, subInput, history }) => {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(initCategoryRef());
@@ -30,11 +30,12 @@ const MenuList = ({ storeData, subInput }) => {
           <MenuCategory
             key={`itemKey-${item.id}`}
             itemKey={item.id}
-            category={item.name}
+            category={item.category}
             list={item.menus}
             setCategoryRef={setCategoryRef}
             dispatch={dispatch}
             subInput={subInput}
+            history={history}
           />
         ))}
       </ul>
@@ -42,4 +43,4 @@ const MenuList = ({ storeData, subInput }) => {
   );
 };
 
-export default MenuList;
+export default React.memo(MenuList);

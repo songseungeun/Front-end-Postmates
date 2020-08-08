@@ -1,3 +1,5 @@
+/* eslint-disable react/jsx-curly-newline */
+/* eslint-disable implicit-arrow-linebreak */
 import React from 'react';
 // import { Link } from 'react-router-dom';
 import styled from 'styled-components';
@@ -9,10 +11,12 @@ const AddressListBlock = styled.ul`
   padding: 0 16px;
   background-color: yellowgreen;
   position: absolute;
+  display: ${(props) => props.place};
   top: 100%;
   background-color: rgb(255, 255, 255);
   box-shadow: rgba(16, 25, 30, 0.08) 0px 1px 4px 0px;
-  border: 1px solid rgba(45, 49, 56, 0.08);
+  /* TODO; BORDER랑 BACKGROUNDCOLOR 필요한지? */
+  /* border: 1px solid rgba(45, 49, 56, 0.08); */
 `;
 
 const AddressListItem = styled.li`
@@ -20,20 +24,29 @@ const AddressListItem = styled.li`
   align-items: center;
   height: 69px;
   border-bottom: 1px solid rgba(217, 219, 224, 0.5);
+  border-top: 1px solid rgba(217, 219, 224, 0.5);
   font-size: 16px;
   font-weight: 400;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   cursor: pointer;
   span {
+    max-width: 330px;
     margin-left: 16px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
 `;
 
-const AddressList = ({ place, getGeocodeAsync, dispatch }) => {
+const AddressList = ({ place, getGeocodeAsync, dispatch, history }) => {
+  // console.log(history, 'history');
   const getGeocode = (address) => {
-    dispatch(getGeocodeAsync(address));
+    dispatch(getGeocodeAsync(address, history));
   };
   return (
-    <AddressListBlock>
+    <AddressListBlock place={place.length ? 'block' : 'none'}>
       {place.map((item) => (
         // <Link to="/feed">
         <AddressListItem

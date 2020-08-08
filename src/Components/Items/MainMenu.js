@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import Media from '../../Style/Media';
 
 const MainMenuWrap = styled.div`
   display: flex;
@@ -7,6 +8,12 @@ const MainMenuWrap = styled.div`
   height: 100%;
   align-items: center;
   justify-content: center;
+  ${Media.tablet`
+    letter-spacing:0;
+    `}
+  ${Media.mobile`
+    display:none;
+    `}
 `;
 const StyleMenu = styled.a`
   margin-right: 20px;

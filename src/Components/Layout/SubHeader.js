@@ -1,12 +1,15 @@
 // 0701 seungeun
 import React from 'react';
+import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import Media from '../../Style/Media';
 import BreadCrumbs from '../Items/BreadCrumbs';
 import SubLocation from '../Items/SubLocation';
 import MenuCategories from '../Items/MenuCategories';
 import SearchItems from '../Items/SearchItems';
-import Cart from '../Items/Cart';
+import { LoginBtn } from '../../Style/BasicBtn';
+import { openCart } from '../../Modules/CartReducer';
+// import Cart from '../Items/Cart';
 
 const SubHeaderBlock = styled.div`
   display: flex;
@@ -16,7 +19,7 @@ const SubHeaderBlock = styled.div`
   font-size: 14px;
   font-family: 'Postmates Std';
   position: sticky;
-  z-index: 102;
+  z-index: 300;
   background-color: rgb(255, 255, 255);
 
   &.subHeader-feed {
@@ -42,6 +45,7 @@ const SubHeaderBlock = styled.div`
 
   &.subHeader-item {
     top: 0px;
+    z-index: 500;
     ${Media.desktop`
       height: 69px;
       margin-top: 260px;
@@ -86,6 +90,16 @@ const Bulkhead = styled.div`
   `}
 `;
 
+const WarpLoginButton = styled.div`
+  margin-left: auto;
+  ${Media.tablet`
+     display: none;
+  `}
+  ${Media.mobile`
+     display: none;
+  `}
+`;
+
 const SubHeader = ({
   page,
   menuList,
@@ -95,6 +109,8 @@ const SubHeader = ({
   changeSubInput,
   dispatch,
 }) => {
+  const totalCount = useSelector((state) => state.Cart.totalCount);
+
   return (
     <SubHeaderBlock className={`subHeader-${page}`}>
       <div className="wrap-subheader-item">
@@ -115,10 +131,21 @@ const SubHeader = ({
           <SearchItems changeSubInput={changeSubInput} dispatch={dispatch} />
         )}
         {page === 'item' && <Bulkhead />}
-        {page === 'item' && <Cart />}
+        {/* {page === 'item' && <Cart />} */}
+        {page === 'item' && (
+          <WarpLoginButton>
+            <LoginBtn
+              onClick={() => dispatch(openCart(true))}
+              active
+              height="45px"
+              width="100px"
+              text={`${totalCount} ITEMS`}
+            />
+          </WarpLoginButton>
+        )}
       </div>
     </SubHeaderBlock>
   );
 };
 
-export default SubHeader;
+export default React.memo(SubHeader);

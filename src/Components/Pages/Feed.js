@@ -30,8 +30,8 @@ const FeedWrapper = styled.div`
   width: 100%;
   `}
 `;
-const Feed = ({ nearby, orderby, favorite, getinfast }) => {
-  console.log(nearby);
+const Feed = ({ orderby, favorite, getinfast }) => {
+  // console.log(nearby);
   // console.log(orderby);
   // console.log(favorite);
   // console.log(getinfast);
@@ -41,12 +41,12 @@ const Feed = ({ nearby, orderby, favorite, getinfast }) => {
       <FeedWrapper>
         <EventSection />
 
-        {/* <StoreCategory
+        <StoreCategory
           category="getinfast"
           data={getinfast}
           title="Get in Fast"
           info="get in fast category"
-        /> */}
+        />
         <StoreCategory
           category="favorite"
           data={favorite}
@@ -64,8 +64,8 @@ const Feed = ({ nearby, orderby, favorite, getinfast }) => {
 
         <StoreCategory
           category="nearby"
-          dataAll={nearby}
-          data={nearby.results}
+          // dataAll={nearby}
+          // data={nearby.results}
           title="Near By"
           info="near by category"
         />
@@ -74,4 +74,4 @@ const Feed = ({ nearby, orderby, favorite, getinfast }) => {
   );
 };
 
-export default Feed;
+export default React.memo(Feed);

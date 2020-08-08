@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { DevUserApi } from '../Dev/DevUserApi';
+import api from '../Utils/LoginApi';
 
 // user 가입 action
 const CREATE_USER = 'CREATE_USER';
@@ -32,7 +33,7 @@ const PUT_CART_SUCCESS = 'PUT_CART_SUCCESS';
 const PUT_CART_ERROR = 'PUT_CART_ERROR';
 
 // cart 제거 action
-const REMOVE_CART = 'REMOVE_CART';
+export const REMOVE_CART = 'REMOVE_CART';
 const REMOVE_CART_SUCCESS = 'REMOVE_CART_SUCCESS';
 const REMOVE_CART_ERROR = 'REMOVE_CART_ERROR';
 
@@ -40,6 +41,25 @@ const REMOVE_CART_ERROR = 'REMOVE_CART_ERROR';
 const PATCH_CART = 'REMOVE_CART';
 const PATCH_CART_SUCCESS = 'REMOVE_CART_SUCCESS';
 const PATCH_CART_ERROR = 'REMOVE_CART_ERROR';
+
+// 희진 login action
+export const LOGIN_USER = 'LOGIN_USER';
+export const LOGIN_USER_SUCCESS = 'LOGIN_USER_SUCCESS';
+export const LOGIN_USER_ERROR = 'LOGIN_USER_ERROR';
+export const LOGOUT_USER = 'LOGOUT_USER';
+
+// login action 생성 함수
+export const loginUsersAsync = (payload) => async (dispatch, state) => {
+  dispatch({ type: LOGIN_USER });
+  try {
+    const { data } = await api.post('/api/v1/members/login/', payload);
+    dispatch({ type: LOGIN_USER_SUCCESS, data, email: payload.email });
+    localStorage.setItem('token', data.token);
+  } catch (e) {
+    dispatch({ type: LOGIN_USER_ERROR, error: e });
+    localStorage.removeItem('token');
+  }
+};
 
 // user 가입 action 생성 함수
 export const createUsersAsync = (payload) => async (dispatch, state) => {
@@ -56,7 +76,7 @@ export const createUsersAsync = (payload) => async (dispatch, state) => {
 export const getUsersAsync = () => async (dispatch, state) => {
   dispatch({ type: GET_USER });
   try {
-    const { data } = await DevUserApi.getUser(); // API 호출 - API 제작 해야 함
+    const { data } = await api.get('/api/v1/members/'); // API 호출 - API 제작 해야 함
     dispatch({ type: GET_USER_SUCCESS, data });
   } catch (e) {
     dispatch({ type: GET_USER_ERROR, error: e });
@@ -467,6 +487,62 @@ export default function userReducer(state = initialState, action) {
         status: {
           loading: false,
           success: true,
+          error: {
+            error: true,
+            massage: action.error,
+          },
+        },
+      };
+    case LOGIN_USER:
+      return {
+        ...state,
+        status: {
+          loading: true,
+          success: false,
+          error: {
+            error: false,
+            massage: null,
+          },
+        },
+      };
+    case LOGIN_USER_SUCCESS:
+      return {
+        ...state,
+        token: action.data.token,
+        isLogin: true,
+        userInfo: { ...state.userInfo, email: action.email },
+        status: {
+          loading: false,
+          success: true,
+          error: {
+            error: false,
+            massage: null,
+          },
+        },
+      };
+    case LOGIN_USER_ERROR:
+      return {
+        ...state,
+        isLogin: false,
+        userInfo: {},
+        status: {
+          loading: false,
+          success: false,
+          error: {
+            error: true,
+            massage: action.error,
+          },
+        },
+      };
+
+    case LOGOUT_USER:
+      return {
+        ...state,
+        isLogin: false,
+        userInfo: {},
+        status: {
+          loading: false,
+          success: false,
           error: {
             error: true,
             massage: action.error,

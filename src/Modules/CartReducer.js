@@ -5,40 +5,19 @@
 /* eslint-disable no-else-return */
 /* eslint-disable spaced-comment */
 
-//액션타입
-// const GET_OPTIONS_LOADING = 'GET_OPTIONS_LOADING';
-// const GET_OPTIONS_SUCCESS = 'GET_OPTIONS_SUCCESS';
-// const GET_OPTIONS_ERROR = 'GET_OPTIONS_ERROR';
-
 export const ADD_TO_CART = 'ADD_TO_CART';
 export const REMOVE_FROM_CART = 'REMOVE_FROM_CART';
 export const CLEAR_CART = 'CLEAR_CART';
-export const ADD_INSTRUCTION_TO_CART = 'ADD_INSTRUCTION_TO_CART';
+const OPEN_CART = 'OPEN_CART';
+const ADD_COUNT = 'ADD_COUNT';
 
-// count
-export const SET_DIFF = 'SET_DIFF';
-export const INCREASE = 'INCREASE';
-export const DECREASE = 'DECREASE';
+export const openCart = (openState) => ({ type: OPEN_CART, openState });
+export const addCount = (count) => ({ type: ADD_COUNT, count });
 
-export const setDiff = (diff) => ({ type: SET_DIFF, diff });
-export const increase = () => ({ type: INCREASE });
-export const decrease = () => ({ type: DECREASE });
-
-//thunk 생성함수
-// export const getOptions = () => async (dispatch) => {
-//   dispatch({ type: GET_OPTIONS_LOADING });
-
-//   try {
-//     const options = await optionsApi.getOptions();
-//     dispatch({ type: GET_OPTIONS_SUCCESS }, options);
-//   } catch (e) {
-//     dispatch({ type: GET_OPTIONS_ERROR, error: e });
-//   }
-// };
-
-//초기상태
 const initialState = {
+  isPaneOpen: false,
   cart: [],
+  totalCount: 0,
 };
 
 export default function CartReducer(state = initialState, action) {
@@ -46,28 +25,43 @@ export default function CartReducer(state = initialState, action) {
     case ADD_TO_CART: {
       const cartItem = state.cart.find(
         (item) => item.name === action.payload.name,
+        console.log(action.payload.name),
       );
 
-      // TODO: option에 대한 분기처리 어떻게 할지?
       if (!cartItem) {
+        console.log(action.payload);
         return {
           ...state,
           cart: state.cart.concat(action.payload),
         };
       } else {
-        if (cartItem.options.length !== action.payload.options.length) {
+        const optionsKeys = Object.keys(cartItem.options);
+        const payloadKeys = Object.keys(action.payload.options);
+        console.log('KEYS', optionsKeys, payloadKeys);
+
+        if (optionsKeys.length !== payloadKeys.length) {
+          console.log('KEYS', optionsKeys.length, payloadKeys.length);
+
           return {
             ...state,
             cart: state.cart.concat(action.payload),
           };
         } else {
           let isInCart = true;
+          optionsKeys.forEach((key) => {
+            const optionItem = cartItem.options[key];
+            const payloadOptionItem = action.payload.options[key];
+            console.log(optionItem, payloadOptionItem);
+            console.log(action.payload);
 
-          cartItem.options.forEach((option, idx) => {
-            if (option.id !== action.payload.options[idx]) {
+            if (!payloadOptionItem) {
+              isInCart = false;
+            }
+            if (optionItem.id !== payloadOptionItem.id) {
               isInCart = false;
             }
           });
+          console.log('bye', optionsKeys);
 
           if (!isInCart) {
             return {
@@ -75,6 +69,7 @@ export default function CartReducer(state = initialState, action) {
               cart: state.cart.concat(action.payload),
             };
           } else {
+            console.log('ddddd', action.payload);
             return {
               ...state,
               cart: state.cart.map((_cartItem) => {
@@ -92,18 +87,6 @@ export default function CartReducer(state = initialState, action) {
       }
     }
 
-    // special instruction -삭제 예정
-    // case ADD_INSTRUCTION_TO_CART:
-    //   return {
-    //     ...state,
-    //     cart: state.cart.map((item) => {
-    //       if (item.name === action.payload.name) {
-    //         return action.payload;
-    //       }
-    //       return cart;
-    //     }),
-    //   };
-
     case REMOVE_FROM_CART:
       console.log('WHAT IS THIS PAYLOAD', action.payload);
       return {
@@ -114,6 +97,17 @@ export default function CartReducer(state = initialState, action) {
       return {
         ...state,
         cart: [],
+        totalCount: 0,
+      };
+    case OPEN_CART:
+      return {
+        ...state,
+        isPaneOpen: action.openState,
+      };
+    case ADD_COUNT:
+      return {
+        ...state,
+        totalCount: action.count,
       };
     default:
       return state;

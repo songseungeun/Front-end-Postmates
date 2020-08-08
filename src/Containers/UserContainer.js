@@ -4,7 +4,8 @@ import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { getUsersAsync, patchUsersAsync } from '../Modules/UserReducer';
 import User from '../Components/Pages/User';
-import OrderHistory from '../Components/Pages/OrderHistory';
+import { setPage } from '../Modules/MainReducer';
+// import OrderHistory from '../Components/Pages/OrderHistory';
 
 const UserContainer = () => {
   const store = useSelector(({ User }) => User);
@@ -15,27 +16,28 @@ const UserContainer = () => {
   // 임시 렌더용 user info
   const { userInfo, status } = store;
 
-  // console.log(status);
   const dispatch = useDispatch();
 
   useEffect(() => {
     dispatch(getUsersAsync());
+    dispatch(setPage('account'));
   }, [dispatch]);
 
   if (status.loading) return <div>로딩중...</div>;
   if (status.error.error) return <div>에러 발생!</div>;
 
   if (!userInfo) return null;
-  if (userInfo[0] === undefined) return null;
+  if (!userInfo.email) return null;
 
-  const user = userInfo[0];
+  // const user = userInfo[0];
 
+  // console.log(status);
+  // console.log(userInfo);
   // console.log(user);
-
   return (
     <>
-      {/* <User user={user} /> */}
-      <OrderHistory />
+      <User user={userInfo} />
+      {/* <OrderHistory /> */}
     </>
   );
 };

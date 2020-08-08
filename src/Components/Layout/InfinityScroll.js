@@ -1,73 +1,97 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-use-before-define */
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
-import Stores from '../Items/Stores';
+import Stores from '../Items/NearStores';
 import { getNearBy } from '../../Modules/FeedReducer';
+import { DevApi } from '../../Dev/DevApi';
+import Media from '../../Style/Media';
 
 const StoreList = styled.ul`
   display: flex;
   flex-wrap: wrap;
-
+  justify-content: space-between;
+  
+/* 
+  ${Media.desktop`
   li {
     margin: 35px 0 0 35px;
   }
   li:nth-of-type(3n + 1) {
     margin-left: 0;
   }
+  `}
+
+  ${Media.tablet`
+
+  `}
+  
+  ${Media.mobile`
+
+  `} */
 `;
 
-const InfinityScroll = ({ data, dataAll }) => {
-  // useEffect(() => {
-  //   window.addEventListener('scroll', handleScroll);
-  // return window.removeEventListener('scroll', handleScroll);
-  // }, []);
+const InfinityScroll = () => {
+  const [state, setState] = useState({
+    loading: false,
+    next: 1,
+    data: [],
+    error: null,
+  });
 
-  // useEffect(() => {
-  //   console.log('useEffect');
-  //   return console.log('return');
-  // }, [data]);
+  const fetchItems = async () => {
+    setState((prev) => ({ ...prev, loading: true }));
+    const lat = localStorage.getItem('location-lat');
+    const lng = localStorage.getItem('location-lng');
+    // console.log(state.next, lat, lng, 'nearby');
+    const { data } = await DevApi.getNearBy(state.next, lat, lng);
 
-  const { nearby } = useSelector((state) => ({
-    nearby: state.Feed.nearby,
-  }));
+    setState((prev) => ({
+      ...prev,
+      loading: false,
+      next: prev.next + 1,
+      data: [...prev.data, ...data.results],
+      error: null,
+    }));
+    // console.log('next', state.next);
+  };
+  useEffect(() => {
+    fetchItems();
+  }, []);
 
-  const dispatch = useDispatch();
-  // console.log(data);
-
-  // const deleteURL = '54.180.102.1/media/';
-  // const deleteURL2 =
-  //   'http://54.180.102.1/api/v1/feed/nearby/?city=San+Francisco&page=';
-
-  const handleScroll = () => {
-    const { innerHeight } = window;
-    const { scrollHeight } = document.body;
-
-    // console.log(innerHeight);
-    // console.log(scrollHeight);
-
-    const scrollTop =
-      (document.documentElement && document.documentElement.scrollTop) ||
-      document.body.scrollTop;
-
-    if (scrollHeight - innerHeight - scrollTop < 300) {
-      console.log('1111');
-      // if (dataAll === undefined) return null;
-      // console.log(dataAll.next.replace(deleteURL2, ''));
-      // console.log(dataAll);
-      const page = dataAll.next;
-      dispatch(getNearBy(page));
+  const onIntersect = async ([entry], observer) => {
+    if (entry.isIntersecting) {
+      observer.unobserve(entry.target);
+      await fetchItems();
+      observer.observe(entry.target);
     }
   };
+
+  const [target, setTarget] = useState(null);
+
+  useEffect(() => {
+    let observer;
+    if (target) {
+      observer = new IntersectionObserver(onIntersect, { threshold: 0.5 });
+      observer.observe(target);
+    }
+    return () => {
+      return observer && observer.disconnect();
+    };
+  }, [target, state.next]);
+
+  const { loading, data, error } = state;
+
+  if (!data) return <div>loading</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <>
       <StoreList>
         {data.map((store) => (
           <Stores
-            key={store.id}
-            id={store.id}
             name={store.name}
             image={store.store_img}
             fee={store.delivery_fee}
@@ -76,8 +100,11 @@ const InfinityScroll = ({ data, dataAll }) => {
           />
         ))}
       </StoreList>
+      <div ref={setTarget} className="Loading">
+        {loading && 'Loading...'}
+      </div>
     </>
   );
 };
 
-export default InfinityScroll;
+export default React.memo(InfinityScroll);

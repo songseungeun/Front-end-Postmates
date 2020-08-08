@@ -1,5 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
+import useWindowSize from './useWindowSize';
 
 const SliderBlock = styled.div``;
 const SliderWrapper = styled.div`
@@ -9,13 +11,14 @@ const SliderWrapper = styled.div`
 const SliderContainer = styled.ul`
   width: 100%;
   display: flex;
+  /* justify-content: space-between; */
 `;
 
 const PrevBtn = styled.div`
   position: absolute;
-  top: calc(50% - 20px);
+  top: calc(50% - 50px);
   left: -20px;
-  z-index: 99;
+  z-index: 60;
 
   width: 40px;
   height: 40px;
@@ -36,9 +39,9 @@ const PrevBtn = styled.div`
 
 const NextBtn = styled.div`
   position: absolute;
-  top: calc(50% - 20px);
+  top: calc(50% - 50px);
   right: -20px;
-  z-index: 99;
+  z-index: 60;
 
   width: 40px;
   height: 40px;
@@ -58,6 +61,14 @@ const NextBtn = styled.div`
 `;
 
 const Slider = ({ list, children }) => {
+  const sizes = {
+    desktop: 1060,
+    tablet: 1059,
+    mobile: 767,
+  };
+
+  const windowSize = useWindowSize();
+
   // console.log(list);
   // console.log(category === 'nearby');
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -80,11 +91,35 @@ const Slider = ({ list, children }) => {
     }
   };
 
-  useEffect(() => {
+  // let device = '';
+  let size = '';
+
+  const moveSlide = (cur) => {
+    if (windowSize.width > sizes.desktop) {
+      // device = 'desktop';
+      size = `-${cur * 324 + cur * 24}px`;
+    } else if (
+      windowSize.width < sizes.tablet &&
+      windowSize.width > sizes.mobile
+    ) {
+      // device = 'tablet';
+      size = `calc(-${cur * 50}% - ${cur * 12}px)`;
+    } else {
+      // device = 'mobile';
+      size = `-${cur * 100}%`;
+    }
+
+    // console.log(device);
+    // console.log(size);
+
     slideRef.current.style.transition = 'all 0.5s ease-in-out';
-    slideRef.current.style.transform = `translateX(-${
-      (currentSlide * 100) / 2
-    }%)`;
+    slideRef.current.style.transform = `translateX(${cur ? size : 0})`;
+  };
+
+  useEffect(() => {
+    const cur = currentSlide;
+    // console.log(slideRef.current.clientWidth);
+    moveSlide(cur);
   }, [currentSlide]);
 
   return (

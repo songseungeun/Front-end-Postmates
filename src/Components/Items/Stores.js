@@ -1,12 +1,15 @@
-// 0701 seungeun
-import React from 'react';
+/* eslint-disable no-param-reassign */
+/* eslint-disable no-unused-expressions */
+/* eslint-disable no-use-before-define */
+import React, { useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import Media from '../../Style/Media';
 
 const Store = styled.li`
+  position: relative;
 
-  margin: 0 10px 0 0;
+  
 
   cursor: pointer;
 
@@ -34,13 +37,18 @@ const Store = styled.li`
   }
 
   ${Media.desktop`
-  flex: 0 0 calc(33.3% - 24px);
+  margin: 0 24px 0 0;
+  flex: 0 0 calc(34% - 24px);
   `}
+
   ${Media.tablet`
+  margin: 0 24px 0 0;
   flex: 0 0 calc(50% - 12px);
   `}
+  
   ${Media.mobile`
-  flex: 0 0 calc(100% - 32px);
+  margin: 0 0 0 0;
+  flex: 0 0 calc(100%);
   `}
 `;
 
@@ -48,21 +56,70 @@ const StoreImage = styled.div`
   width: 100%;
   padding-top: 65%;
   margin-bottom: 15px;
-  background-color: #fff;
+  background-color: #f4f4f4;
 
-  /* background-image: url(${(props) => props.image || null});
+  background-image: url(${(props) => props.image || null});
   background-size: cover;
   background-position: center center;
-  background-repeat: no-repeat; */
+  background-repeat: no-repeat;
+
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  &:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    /* bottom: 0; */
+    width: 100%;
+    padding-top: 65%;
+
+    background-image: radial-gradient(
+      circle at 50% 50%,
+      rgba(0, 0, 0, 0),
+      rgba(0, 0, 0, 0) 44%,
+      rgba(0, 0, 0, 1)
+    );
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+  }
+  &:hover:after {
+    opacity: 0.3;
+  }
 `;
 
-const Stores = ({ id, name, image, fee, time, url }) => {
-  console.log(id, name, image, fee, time, url);
+export default function Stores({ name, image, fee, time, url }) {
+  // console.log(id, name, image, fee, time, url);
+  const imgRef = useRef(null);
+  const [isLoad, setIsLoad] = useState(false);
+
+  useEffect(() => {
+    function loadImage() {
+      setIsLoad(true);
+    }
+
+    const img = imgRef.current;
+    img && img.addEventListener(loadImageEvent, loadImage);
+
+    return () => {
+      img && img.removeEventListener(loadImageEvent, loadImage);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!observer) {
+      observer = new IntersectionObserver(onIntersection, {
+        threshold: 0.5,
+      });
+    }
+    imgRef.current && observer.observe(imgRef.current);
+  }, []);
 
   return (
-    <Store key={id}>
+    <Store>
       <Link to={`/item/${url}`}>
-        <StoreImage image={image} />
+        <StoreImage ref={imgRef} image={isLoad ? image : null} />
         <h3>
           {name}
           <svg width="14" height="14" viewBox="0 0 14 14">
@@ -72,11 +129,23 @@ const Stores = ({ id, name, image, fee, time, url }) => {
             </g>
           </svg>
         </h3>
-        <strong>${fee} Delivery</strong>
+        <strong>{fee ? `$${fee}` : 'Free'} Delivery</strong>
         <em> · {time} min</em>
       </Link>
     </Store>
   );
-};
+}
 
-export default Stores;
+let observer = null;
+const loadImageEvent = 'loadImage';
+
+function onIntersection(entries, io) {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      io.unobserve(entry.target);
+      entry.target.dispatchEvent(new CustomEvent(loadImageEvent));
+      entry.target.style.opacity = '1';
+      entry.target.style.transition = 'opacity 0.7s ease-in-out';
+    }
+  });
+}
