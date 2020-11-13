@@ -14,6 +14,7 @@ const Dimmed = styled.div`
 
   background-color: rgba(256, 256, 256, 0.63);
 `;
+
 const PopUpBlock = styled.div`
   position: fixed;
   top: 50%;
